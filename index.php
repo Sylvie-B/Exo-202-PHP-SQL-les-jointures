@@ -10,8 +10,6 @@ require "DbCo.php";
 $pdo = new DbCo();
 $db = $pdo->connect();
 
-
-
 /**
  * 3. Sans utiliser les alias, effectuez une jointure de type INNER JOIN de manière à récupérer :
  *   - Les articles :
@@ -26,15 +24,35 @@ $db = $pdo->connect();
 // TODO Votre code ici.
 
 $request = $db->prepare("
-    SELECT
+    SELECT article.id, article.title, article.content, categorie.name
+    FROM article
+    INNER JOIN categorie ON article.author_fk = categorie.id
 ");
+
+$request->execute();
+
+foreach ($request as $item){
+    echo "<div>Article ".$item['id']." : ".$item['title']." : ".$item['content']." Catégorie : ".$item['name']."</div>";
+}
+
+echo "<br>";
 
 /**
  * 4. Réalisez la même chose que le point 3 en utilisant un maximum d'alias.
  */
 
 // TODO Votre code ici.
+$request = $db->prepare("
+    SELECT ar.id, ar.title, ar.content, ca.name
+    FROM article as ar
+    INNER JOIN categorie as ca ON ar.author_fk = ca.id
+");
 
+$request->execute();
+
+foreach ($request as $item){
+    echo "<div>Article ".$item['id']." : ".$item['title']." : ".$item['content']." Catégorie : ".$item['name']."</div>";
+}
 
 /**
  * 5. Ajoutez un utilisateur dans la table utilisateur.
@@ -43,3 +61,23 @@ $request = $db->prepare("
  */
 
 // TODO Votre code ici.
+
+try {
+    $sqlUt = "
+        INSERT INTO utilisateur (lastName, firstName, mail, password)
+        VALUES ('Doe', 'John', 'unknown@)nowhere.fr', 'motDePasse')
+    ";
+
+    $addUt = $db->exec($sqlUt);
+
+    $sqlCo = "
+        INSERT INTO commentaire (content, user_fk, article_fk)
+        VALUES ('Mon super commentaire', 3, 2)
+    ";
+
+    $addCo = $db->exec($sqlCo);
+
+}
+catch (PDOException $exception){
+    echo "add user failed : ".$exception->getMessage();
+}
